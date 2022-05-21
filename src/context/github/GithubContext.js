@@ -12,6 +12,7 @@ export const GithubProvider = ({ children }) => {
 
   const initialState = {
     users: [],
+    user: {}, //For one user the initial state is an empty object
     loading: false,
   };
 
@@ -45,6 +46,25 @@ export const GithubProvider = ({ children }) => {
     });
   };
 
+  //Get single user
+  const getUser = async (login) => {
+    setLoading();
+    const response = await fetch(`${GITHUB_URL}/users/${login}`, {
+      headers: { Authorization: `token ${GITHUB_TOKEN}` },
+    });
+
+    const data = await response.json();
+
+    if (response.status === 404) {
+      window.location = "/notfound";
+    } else {
+      dispatch({
+        type: "GET_USER",
+        payload: data,
+      });
+    }
+  };
+
   //Set loading
   const setLoading = () => dispatch({ type: "SET_LOADING" });
 
@@ -52,9 +72,11 @@ export const GithubProvider = ({ children }) => {
     <GithubContext.Provider
       value={{
         users: state.users,
+        user: state.user,
         loading: state.loading,
         searchUsers,
         clearUsers,
+        getUser,
       }}
     >
       {children}
