@@ -13,6 +13,7 @@ export const GithubProvider = ({ children }) => {
   const initialState = {
     users: [],
     user: {}, //For one user the initial state is an empty object
+    repos: [],
     loading: false,
   };
 
@@ -65,6 +66,28 @@ export const GithubProvider = ({ children }) => {
     }
   };
 
+  //Get User repos
+  const getUserRepos = async (login) => {
+    setLoading();
+    const params = new URLSearchParams({
+      sort: "created",
+      per_page: 10,
+    });
+    const response = await fetch(
+      `${GITHUB_URL}/users/${login}/repos?${params}`,
+      {
+        headers: { Authorization: `token ${GITHUB_TOKEN}` },
+      }
+    );
+
+    const data = await response.json(); //We just need itmes object from the api object
+
+    dispatch({
+      type: "GET_REPOS",
+      payload: data,
+    });
+  };
+
   //Set loading
   const setLoading = () => dispatch({ type: "SET_LOADING" });
 
@@ -73,10 +96,12 @@ export const GithubProvider = ({ children }) => {
       value={{
         users: state.users,
         user: state.user,
+        repos: state.repos,
         loading: state.loading,
         searchUsers,
         clearUsers,
         getUser,
+        getUserRepos,
       }}
     >
       {children}
